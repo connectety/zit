@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # usage differs from git hash-object
 
 # git1.0 hash-object.c sha1_file.c:write_sha1_file
@@ -7,9 +7,10 @@ import os
 import sys
 import zlib
 
-_, type, filename = sys.argv
-contents = open(filename).read()
-header = '{} {}\0'.format(type, len(contents))
+_, file_type, filename = sys.argv
+
+contents = open(filename, "rb").read()
+header = '{} {}\0'.format(file_type, len(contents)).encode("raw_unicode_escape")
 
 hasher = hashlib.sha1()
 hasher.update(header)
@@ -22,6 +23,6 @@ if not os.path.exists(dirname):
     os.mkdir(dirname)
 
 compressed = zlib.compress(header + contents)
-open(sha1_filename, 'w').write(compressed)
+open(sha1_filename, 'wb').write(compressed)
 
-print sha1
+print(sha1)

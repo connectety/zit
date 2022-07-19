@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 # update-index.c:add_file_to_cache
 import os
@@ -7,23 +7,23 @@ import sys
 
 import index
 
-filenames = subprocess.check_output(['find'] + sys.argv[1:] + ['!', '-type', 'd']).splitlines() # for directories
+filenames = subprocess.check_output(['find'] + sys.argv[1:] + ['!', '-type', 'd']).decode().splitlines() # for directories
 entries = index.read_index()
 for filename in filenames:
-    entries = [e for e in entries if e[0] != filename]
+    entries = [e for e in entries if e[0] != filename.encode("raw_unicode_escape")]
     if os.path.exists(filename):
         if os.path.islink(filename): # for symlinks
-            mode = 0120000
+            mode = 0o120000
             with open('.zit/blob.tmp', 'w') as f:
                 f.write(os.readlink(filename))
-            sha1 = subprocess.check_output(['hash-object', 'blob', '.zit/blob.tmp']).strip()
+            sha1 = subprocess.check_output(['hash-object', 'blob', '.zit/blob.tmp']).decode().strip()
         else:
             if os.access(filename, os.X_OK): # for executable files
-                mode = 0100755
+                mode = 0o100755
             else:
-                mode = 0100644
-            sha1 = subprocess.check_output(['hash-object', 'blob', filename]).strip()
-        entries.append((filename, mode, bytearray.fromhex(sha1)))
+                mode = 0o100644
+            sha1 = subprocess.check_output(['hash-object', 'blob', filename]).decode().strip()
+        entries.append((filename.encode("raw_unicode_escape"), mode, bytes(bytearray.fromhex(sha1))))
 entries.sort()
 
 index.write_index(entries)

@@ -34,7 +34,7 @@ header 'Reading an object... [cat-file]'
 [[ $($ZIT cat-file blob 3eb7f9afc452afe452b99d478d89264380622248 ) == "I'm a little teapot" ]]
 
 header 'Writing to the index... [index.py]'
-PYTHONPATH=$(dirname "$ZIT") /usr/bin/python -c 'import index; index.write_index([("lullaby", 0100644, "\x3e\xb7\xf9\xaf\xc4\x52\xaf\xe4\x52\xb9\x9d\x47\x8d\x89\x26\x43\x80\x62\x22\x48")])'
+PYTHONPATH=$(dirname "$ZIT") /usr/bin/env python3 -c 'import index; index.write_index([(b"lullaby", 0o100644, b"\x3e\xb7\xf9\xaf\xc4\x52\xaf\xe4\x52\xb9\x9d\x47\x8d\x89\x26\x43\x80\x62\x22\x48")])'
 [[ $(get_md5 .zit/index) == 06432001fc95f78cd6353321f7c95009 ]]
 
 header 'Adding a file to the index... [add]'
@@ -44,7 +44,7 @@ $ZIT add handle
 [[ $(get_md5 .zit/index) == 61728e18ee75d24576d9ea2b626fb1ff ]]
 
 header 'Reading the index... [index.py]'
-[[ $(PYTHONPATH=$(dirname "$ZIT") /usr/bin/python -c 'import index; print index.read_index()') == "[('handle', 33188, '\x01.\xa9.\x81\x17\x1f^\xf7Hf\x96\x87\x86V\xc5&<\xf7\"'), ('lullaby', 33188, '>\xb7\xf9\xaf\xc4R\xaf\xe4R\xb9\x9dG\x8d\x89&C\x80b\"H')]" ]]
+[[ $(PYTHONPATH=$(dirname "$ZIT") /usr/bin/env python3 -c 'import index; print(index.read_index())') == "[(b'handle', 33188, b'\x01.\xa9.\x81\x17\x1f^\xf7Hf\x96\x87\x86V\xc5&<\xf7\"'), (b'lullaby', 33188, b'>\xb7\xf9\xaf\xc4R\xaf\xe4R\xb9\x9dG\x8d\x89&C\x80b\"H')]" ]]
 
 header 'Writing the index to a tree object... [write-tree]'
 initial_tree=$($ZIT write-tree)
@@ -130,7 +130,7 @@ rm -f handle spout
 $ZIT checkout -b stanza
 [[ $(<.zit/HEAD) == 'ref: refs/heads/stanza' ]]
 [[ -x handle ]]
-[[ $(python -c 'import os; print os.readlink("spout")') == handle ]]
+[[ $(/usr/bin/env python3 -c 'import os; print(os.readlink("spout"))') == handle ]]
 
 header 'Commit directory [write-tree]'
 mkdir stanza2

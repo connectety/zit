@@ -1,5 +1,5 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python3
+import binascii
 import os
 import subprocess
 
@@ -8,14 +8,15 @@ import index
 entries = index.read_index()
 # entry.c:checkout_entry
 for filename, mode, sha1 in entries:
+    filename = filename.decode("raw_unicode_escape")
     assert not filename.startswith('/') # basic safety checks
     assert '..' not in filename
     subprocess.check_call(['mkdir', '-p', './' + os.path.dirname(filename)])
     # TODO git 1.0 doesn't seem to unlink deleted files
-    subprocess.check_call(['cat-file', 'blob', sha1.encode('hex')], stdout=open(filename, 'w'))
-    if mode == 0100755: # for executable files
-        os.chmod(filename, 0755)
-    elif mode == 0120000: # for symlinks
+    subprocess.check_call(['cat-file', 'blob', binascii.hexlify(sha1)], stdout=open(filename, 'w'))
+    if mode == 0o100755: # for executable files
+        os.chmod(filename, 0o755)
+    elif mode == 0o120000: # for symlinks
         target = open(filename).read()
         if os.path.exists(filename):
             os.unlink(filename)
